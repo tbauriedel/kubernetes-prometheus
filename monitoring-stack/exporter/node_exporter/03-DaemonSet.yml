@@ -22,45 +22,45 @@ spec:
         component: exporter
     spec:
       containers:
-      - args:
-        - "--web.config.file=/etc/node-exporter/web-config/web-config.yaml"
-        - --path.sysfs=/host/sys
-        - --path.rootfs=/host/root
-        - --no-collector.wifi
-        - --no-collector.hwmon
-        - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/pods/.+)($|/)
-        - --collector.netclass.ignored-devices=^(veth.*)$
-        name: node-exporter
-        image: prom/node-exporter
-        ports:
-          - containerPort: 9100
-            protocol: TCP
-        volumeMounts:
-        - name: web-config
-          mountPath: /etc/node-exporter/web-config
-          readOnly: true
-        - name: tls-certs
-          mountPath: /etc/node-exporter/tls
-          readOnly: true
-        - mountPath: /host/sys
-          mountPropagation: HostToContainer
-          name: sys
-          readOnly: true
-        - mountPath: /host/root
-          mountPropagation: HostToContainer
-          name: root
-          readOnly: true
+        - name: node-exporter
+          image: prom/node-exporter
+          args:
+            - "--web.config.file=/etc/node-exporter/web-config/web-config.yaml"
+            - "--path.sysfs=/host/sys"
+            - "--path.rootfs=/host/root"
+            - "--no-collector.wifi"
+            - "--no-collector.hwmon"
+            - "--collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/pods/.+)($|/)"
+            - "--collector.netclass.ignored-devices=^(veth.*)$"
+          ports:
+            - containerPort: 9100
+              protocol: TCP
+          volumeMounts:
+            - name: web-config
+              mountPath: /etc/node-exporter/web-config
+              readOnly: true
+            - name: tls-certs
+              mountPath: /etc/node-exporter/tls
+              readOnly: true
+            - mountPath: /host/sys
+              mountPropagation: HostToContainer
+              name: sys
+              readOnly: true
+            - mountPath: /host/root
+              mountPropagation: HostToContainer
+              name: root
+              readOnly: true
       volumes:
-      - name: web-config
-        configMap:
-          name: node-exporter-web-config
-          defaultMode: 420
-      - name: tls-certs
-        secret:
-          secretName: node-exporter-tls-secret
-      - hostPath:
-          path: /sys
-        name: sys
-      - hostPath:
-          path: /
-        name: root
+        - name: web-config
+          configMap:
+            name: node-exporter-web-config
+            defaultMode: 420
+        - name: tls-certs
+          secret:
+            secretName: node-exporter-tls-secret
+        - hostPath:
+            path: /sys
+          name: sys
+        - hostPath:
+            path: /
+          name: root

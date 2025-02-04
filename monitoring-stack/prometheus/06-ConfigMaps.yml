@@ -6,10 +6,10 @@ metadata:
   namespace: monitoring
 data:
   prometheus.yml: |
-    global: 
+    global:
       scrape_interval: 30s
       scrape_timeout: 10s
-    
+
     scrape_configs:
       - job_name: "prometheus"
         scheme: https
@@ -17,7 +17,7 @@ data:
           insecure_skip_verify: true
         static_configs:
           - targets: ["localhost:9090"]
-      
+
       - job_name: 'node-exporter'
         scheme: https
         tls_config:
