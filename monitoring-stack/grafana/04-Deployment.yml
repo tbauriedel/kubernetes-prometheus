@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-server
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-server
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 50%
+  template:
+    metadata:
+      labels:
+        app: grafana-server
+    spec:
+      securityContext:
+        fsGroup: 472
+      containers:
+        - name: grafana-server
+          image: grafana/grafana
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/grafana
+            - name: config-volume
+              mountPath: /etc/grafana
+            - name: tls-certs
+              mountPath: /etc/grafana/tls
+              readOnly: true
+          securityContext:
+            runAsUser: 472
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: grafana-data
+        - name: config-volume
+          configMap:
+            name: grafana-server-config
+            defaultMode: 420
+        - name: tls-certs
+          secret:
+            secretName: grafana-tls-secret

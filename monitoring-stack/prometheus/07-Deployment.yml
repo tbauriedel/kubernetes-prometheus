@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-server
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-server
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 50%
+  template:
+    metadata:
+      labels:
+        app: prometheus-server
+    spec:
+      securityContext:
+        fsGroup: 471
+      serviceAccountName: prometheus-node-discovery
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v3.1.0
+          args:
+            - "--storage.tsdb.path=/var/lib/prometheus"
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--web.config.file=/etc/prometheus/web-config/web-config.yaml"
+            #- "--log.level=debug"
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/prometheus
+            - name: config-volume
+              mountPath: /etc/prometheus
+            - name: web-config
+              mountPath: /etc/prometheus/web-config
+              readOnly: true
+            - name: tls-certs
+              mountPath: /etc/prometheus/tls
+              readOnly: true
+          securityContext:
+            runAsUser: 471
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: prometheus-data
+        - name: config-volume
+          configMap:
+            name: prometheus-server-config
+            defaultMode: 420
+        - name: web-config
+          configMap:
+            name: prometheus-web-config
+            defaultMode: 420
+        - name: tls-certs
+          secret:
+            secretName: prometheus-server-tls-secret

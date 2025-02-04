@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-server-config
+  namespace: monitoring
+data:
+  grafana.ini: |
+    instance_name = grafana.foobar.de
+    app_mode = production
+
+    [security]
+    admin_user = admin
+    admin_password = changeMe-0815!
+
+    [server]
+    http_port = 3000
+    cert_key = /etc/grafana/tls/tls.key
+    cert_file = /etc/grafana/tls/tls.crt
+    protocol = http
